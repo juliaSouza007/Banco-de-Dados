@@ -1,12 +1,10 @@
-
 <?php
-session_start();
 
 // Conexão com o banco de dados
 $host = "127.0.0.1";
 $dbname = 'a2023952624@teiacoltec.org';
 $name = 'a2023952624@teiacoltec.org';
-$senha = 'coltec2024';
+$senha = '--------';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname", $name, $senha);
@@ -15,21 +13,23 @@ try {
     die("Erro ao conectar: " . $e->getMessage());
 }
 
-// Consulta para listar todos os estados na caixa de seleção
-$sqlEstados = "SELECT DISTINCT `Sigla Estado` FROM municipios_brasil_populacao_2022_V5";
+// Consulta para listar todos os estados na caixa de selecao
+$sqlEstados = "SELECT DISTINCT `Sigla Estado` FROM municipiosBrasil";
 $stmtEstados = $pdo->prepare($sqlEstados);
 $stmtEstados->execute();
 $estados = $stmtEstados->fetchAll(PDO::FETCH_ASSOC);
 
-// Consulta para as 10 cidades mais populosas
-$sqlTop10Cidades = "SELECT * FROM municipios_brasil_populacao_2022_V5 ORDER BY Populacao DESC LIMIT 10";
+// Consulta para as 10 cidades mais populosas do Brasil
+$sqlTop10Cidades = "SELECT * FROM municipiosBrasil 
+			        WHERE Municipio NOT LIKE "Brasil"
+			        ORDER BY Populacao DESC LIMIT 10";
 $stmtTop10Cidades = $pdo->prepare($sqlTop10Cidades);
 $stmtTop10Cidades->execute();
 $top10Cidades = $stmtTop10Cidades->fetchAll(PDO::FETCH_ASSOC);
 
 // Consulta para a tabela de capitais
 $sqlCapitais = "SELECT Estado, `Sigla Estado`, Municipio AS Capital, Populacao 
-                FROM municipios_brasil_populacao_2022_V5 
+                FROM municipiosBrasil
                 WHERE Municipio IN (
                     'Rio Branco', 'Maceió', 'Macapá', 'Manaus', 'Salvador', 
                     'Fortaleza', 'Brasília', 'Vitória', 'Goiânia', 'São Luís', 
@@ -42,17 +42,21 @@ $stmtCapitais = $pdo->prepare($sqlCapitais);
 $stmtCapitais->execute();
 $capitais = $stmtCapitais->fetchAll(PDO::FETCH_ASSOC);
 
-// Consulta para a população de cada estado
-$sqlPopulacaoEstado = "SELECT Estado, `Sigla Estado`, SUM(Populacao) AS PopulacaoTotal FROM municipios_brasil_populacao_2022_V5 GROUP BY Estado, `Sigla Estado`";
-$stmtPopulacaoEstado = $pdo->prepare($sqlPopulacaoEstado);
-$stmtPopulacaoEstado->execute();
-$populacaoEstado = $stmtPopulacaoEstado->fetchAll(PDO::FETCH_ASSOC);
+// Consulta para a populacao de cada estado
+$sqlPopEstado = "SELECT Estado, `Sigla Estado`, SUM(Populacao) AS PopulacaoTotal 
+			     FROM municipiosBrasil 
+			     GROUP BY Estado, `Sigla Estado`";
+$stmtPopEstado = $pdo->prepare($sqlPopulacaoEstado);
+$stmtPopEstado->execute();
+$popEstado = $stmtPopEstado->fetchAll(PDO::FETCH_ASSOC);
 
 // Verifica se um estado foi selecionado
 $estadoSelecionado = $_POST['estado'] ?? null;
 if ($estadoSelecionado) {
     // Consulta para as 10 cidades mais populosas do estado selecionado
-    $sqlTop10Estado = "SELECT * FROM municipios_brasil_populacao_2022_V5 WHERE `Sigla Estado` = :estado ORDER BY Populacao DESC LIMIT 10";
+    $sqlTop10Estado = "SELECT * FROM municipiosBrasil 
+			           WHERE `Sigla Estado` = :estado 
+			           ORDER BY Populacao DESC LIMIT 10";
     $stmtTop10Estado = $pdo->prepare($sqlTop10Estado);
     $stmtTop10Estado->bindParam(':estado', $estadoSelecionado);
     $stmtTop10Estado->execute();
@@ -102,7 +106,7 @@ if ($estadoSelecionado) {
 
     <!-- Tabela das 10 cidades mais populosas do estado selecionado -->
     <?php if ($estadoSelecionado && $top10CidadesEstado): ?>
-        <h3>10 Cidades Mais Populosas de <?php echo htmlspecialchars($estadoSelecionado); ?></h3>
+        <h3>10 Cidades mais populosas de <?php echo htmlspecialchars($estadoSelecionado); ?></h3>
         <table>
             <tr>
                 <th>Posição</th>
@@ -120,7 +124,7 @@ if ($estadoSelecionado) {
     <?php endif; ?>
 
     <!-- Tabela das 10 cidades mais populosas do Brasil -->
-    <h3>10 Cidades Mais Populosas do Brasil</h3>
+    <h3>10 Cidades mais populosas do Brasil</h3>
     <table>
         <tr>
             <th>Posição</th>
@@ -139,7 +143,7 @@ if ($estadoSelecionado) {
     </table>
 
     <!-- Tabela com as capitais -->
-    <h3>Capitais dos Estados do Brasil</h3>
+    <h3>Capitais dos estados do Brasil</h3>
     <table>
         <tr>
             <th>Estado</th>
@@ -165,7 +169,7 @@ if ($estadoSelecionado) {
             <th>Sigla</th>
             <th>População Total</th>
         </tr>
-        <?php foreach ($populacaoEstado as $estado): ?>
+        <?php foreach ($popEstado as $estado): ?>
         <tr>
             <td><?php echo htmlspecialchars($estado['Estado']); ?></td>
             <td><?php echo htmlspecialchars($estado['Sigla Estado']); ?></td>
