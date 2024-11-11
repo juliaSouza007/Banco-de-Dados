@@ -1,8 +1,7 @@
 
 <?php
-session_start();
 
-// Conexão com o banco de dados
+// conexao com o banco de dados
 $host = "127.0.0.1";
 $dbname = 'a2023952624@teiacoltec.org';
 $name = 'a2023952624@teiacoltec.org';
@@ -15,7 +14,7 @@ try {
     die("Erro ao conectar: " . $e->getMessage());
 }
 
-// Consulta para listar todos os estados na caixa de seleção
+// Consulta para listar todos os estados na caixa de selecao
 $sqlEstados = "SELECT DISTINCT `Sigla Estado` FROM municipiosBrasil";
 $stmtEstados = $pdo->prepare($sqlEstados);
 $stmtEstados->execute();
@@ -44,7 +43,7 @@ $stmtCapitais = $pdo->prepare($sqlCapitais);
 $stmtCapitais->execute();
 $capitais = $stmtCapitais->fetchAll(PDO::FETCH_ASSOC);
 
-// Consulta para a população de cada estado
+// Consulta para a populacao de cada estado
 $sqlPopulacaoEstado = "SELECT Estado, `Sigla Estado`, SUM(Populacao) AS PopulacaoTotal 
 			FROM municipiosBrasil 
 			GROUP BY Estado, `Sigla Estado`";
@@ -92,7 +91,7 @@ if ($estadoSelecionado) {
 <body>
     <h2>Listar Tabela de Municípios no Brasil - 2022</h2>
     
-    <!-- Caixa de seleção para escolher o estado -->
+    <!-- Caixa de selecao para escolher o estado -->
     <form method="POST" action="">
         <label for="estado">Escolha um estado:</label>
         <select name="estado" id="estado">
